@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:foodrecipe/models/recipe_model.dart';
+import 'package:foodrecipe/search.dart';
 import 'package:http/http.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = true;
   List<RecipeModel> recipeList = <RecipeModel>[];
   List recipeCatList = [
     {
@@ -44,15 +46,19 @@ class _HomeScreenState extends State<HomeScreen> {
           appCalories: 0.0, appImgUrl: '', appLabel: '', appUrl: '');
       recipeModel = RecipeModel.fromMap(element['recipe']);
       recipeList.add(recipeModel);
+      setState(() {
+        isLoading = false;
+      });
     });
-    // for (var element in recipeList) {
-    //   print(element.appLabel);
-    // }
+    for (var element in recipeList) {
+      print(element.appLabel);
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    getRecipe("ladoo");
   }
 
   @override
@@ -105,7 +111,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 "") {
                               log("Blank dearch");
                             } else {
-                              getRecipe(searchController.text);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      Search(searchController.text),
+                                ),
+                              );
                             }
                           },
                           child: const Icon(
@@ -139,111 +151,112 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Container(
-                  child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: recipeList.length,
-                    itemBuilder: (context, index) {
-                      return InkWell(
-                        onTap: () {},
-                        child: Card(
-                          margin: const EdgeInsets.all(20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          elevation: 0.0,
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.network(
-                                  recipeList[index].appImgUrl.toString(),
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: 200,
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: recipeList.length,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              onTap: () {},
+                              child: Card(
+                                margin: const EdgeInsets.all(20),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                elevation: 0.0,
+                                child: Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.network(
+                                        recipeList[index].appImgUrl.toString(),
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: 200,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      left: 0,
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                            color: Colors.black38,
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(20),
+                                              bottomRight: Radius.circular(20),
+                                            )),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 10),
+                                        child: Text(
+                                          recipeList[index].appLabel.toString(),
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                left: 0,
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                      color: Colors.black38,
-                                      borderRadius: BorderRadius.only(
-                                        bottomLeft: Radius.circular(20),
-                                        bottomRight: Radius.circular(20),
-                                      )),
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 5, horizontal: 10),
-                                  child: Text(
-                                    recipeList[index].appLabel.toString(),
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
-                Container(
+                SizedBox(
                     height: 100,
                     child: ListView.builder(
                       itemCount: recipeCatList.length,
                       shrinkWrap: true,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
-                        return Container(
-                          child: InkWell(
-                            onTap: () {},
-                            child: Card(
-                              margin: EdgeInsets.all(20),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              elevation: 0.0,
-                              child: Stack(
-                                children: [
-                                  ClipRRect(
+                        return InkWell(
+                          onTap: () {},
+                          child: Card(
+                            margin: const EdgeInsets.all(20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            elevation: 0.0,
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Image.network(
+                                      recipeCatList[index]["imgUrl"],
+                                      fit: BoxFit.cover,
+                                      width: 200,
+                                      height: 250,
+                                    )),
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  top: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 5, horizontal: 10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black38,
                                       borderRadius: BorderRadius.circular(18),
-                                      child: Image.network(
-                                        recipeCatList[index]["imgUrl"],
-                                        fit: BoxFit.cover,
-                                        width: 200,
-                                        height: 250,
-                                      )),
-                                  Positioned(
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    top: 0,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 5, horizontal: 10),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black38,
-                                        borderRadius: BorderRadius.circular(18),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            recipeCatList[index]["heading"],
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                            ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          recipeCatList[index]["heading"],
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         );
