@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:foodrecipe/models/recipe_model.dart';
+import 'package:foodrecipe/recipe_screen.dart';
 import 'package:http/http.dart';
 
 class Search extends StatefulWidget {
@@ -140,7 +141,16 @@ class _SearchState extends State<Search> {
                           itemCount: recipeList.length,
                           itemBuilder: (context, index) {
                             return InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RecipeScreen(
+                                      url: recipeList[index].appUrl.toString(),
+                                    ),
+                                  ),
+                                );
+                              },
                               child: Card(
                                 margin: const EdgeInsets.all(20),
                                 shape: RoundedRectangleBorder(
